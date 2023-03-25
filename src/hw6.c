@@ -88,6 +88,50 @@ int main(int argc, char *argv[]) {
     
     // TODO: handle WILDCARD_INVALID
 
+    // normalize line bounds
+    uint total_lines = 0;
+    char c;
+    for (c=getc(in_fp); c != EOF; c=getc(in_fp)) {
+        if (c == '\n')
+            total_lines++;
+    }
+    if (seen_l) {
+        if (end_line > total_lines)
+            end_line = total_lines;
+        if (start_line > end_line)
+            start_line = end_line;
+    } else {
+        start_line = 1;
+        end_line = total_lines;
+    }
+
+    // copy all lines to start line
+    fseek(in_fp, 0L, SEEK_SET);
+    ungetc('*', in_fp);
+    uint curr_line = 1;
+    for (c=getc(in_fp); curr_line < start_line && c != EOF; c=getc(in_fp)) {
+        putc(c, out_fp);
+        if (c == '\n')
+            curr_line++;
+    }
+
+    // search and replace at start to end line
+    for (c=getc(in_fp); curr_line <= end_line && c != EOF; c=getc(in_fp)) {
+        putc(c, out_fp);
+        // TODO
+        if (c == '\n')
+            curr_line++;
+    }
+
+    // copy to end of line
+    for (c=getc(in_fp); curr_line <= total_lines && c != EOF; c=getc(in_fp)) {
+        putc(c, out_fp);
+        if (c == '\n')
+            curr_line++;
+    }
+
+
+    // close pointers
     fclose(in_fp);
     fclose(out_fp);
     return EXIT_SUCCESS;
