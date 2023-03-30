@@ -57,10 +57,25 @@ int main(int argc, char *argv[]) {
             if (seen_l)
                 return DUPLICATE_ARGUMENT;
             seen_l = 1;
+
+            if (optarg == NULL || *optarg == '-') {
+                l_arg_err = 1;
+                break;
+            }
+
+            char *token = strtok(optarg, ",");
+            if (token == NULL || sscanf(token, "%ld", &start_line) != 1) {
+                l_arg_err = 1;
+                break;
+            }
             
-            if (optarg == NULL ||
-                *optarg == '-' || 
-                sscanf(optarg, "%ld,%ld", &start_line, &end_line) != 2 ||
+            token = strtok(NULL, ",");
+            if (token == NULL || !isdigit(*token) || sscanf(token, "%ld", &end_line) != 1) {
+                l_arg_err = 1;
+                break;
+            }
+            
+            if (
                 start_line < 0 || 
                 end_line < 0 || 
                 start_line > end_line
@@ -68,6 +83,7 @@ int main(int argc, char *argv[]) {
                 l_arg_err = 1;
                 break;   
             }
+
             break;
         default:
             // unreachable thanks to getopt
@@ -77,9 +93,18 @@ int main(int argc, char *argv[]) {
     }
 
     // make sure we have enough arguments for the files
-    extern int optind;
-    if ((optind + 1) >= argc)
-        return INPUT_FILE_MISSING;
+    // extern int optind;
+    // if ((optind) > argc - 2) {
+    //     for (int i=0; i<argc; i++)
+    //         printf("%s ", argv[i]);
+    //     printf("\n");
+    //     printf("failed input 1\n");
+    //     return INPUT_FILE_MISSING;
+    // }
+    
+    // for (int i=0; i<argc; i++)
+    //     printf("%s ", argv[i]);
+    // printf("\n");
 
     FILE *in_fp, *out_fp;
     if ((in_fp = fopen(argv[argc - 2], "r")) == NULL)
